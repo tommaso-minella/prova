@@ -1,0 +1,20 @@
+module: plugins.sharepoint_driver
+class: SharePointDriver
+base_url: "https://your-sharepoint-site-url"
+auth:
+  client_id: "your-client-id"
+  client_secret: "your-client-secret"
+  tenant_id: "your-tenant-id"
+permissions:
+  folders:
+    shared_docs:
+      users: ["user3@example.com"]
+      groups: ["group2"]
+  files:
+    "shared_docs/ImportantDoc.pdf":
+      users: ["user3@example.com"]
+      groups: []
+  groups:
+    group2:
+      - "user3@example.com"
+      - "user4@example.com"

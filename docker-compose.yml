@@ -1,0 +1,115 @@
+services:
+  ragcore-app-client:
+    container_name: ragcore-app-client
+    build:
+      context: ./ragcore-app-client
+    ports:
+      - "8080:80"
+    volumes:
+      - ragcore_app_client_volume:/app
+    networks:
+      - ragnet
+    env_file:
+      - ./.env
+    restart: always
+
+  ragcore-app-server:
+    container_name: ragcore-app-server
+    build:
+      context: ./ragcore-app-server
+    ports:
+      - "8081:80"
+    volumes:
+      - ragcore_app_server_volume:/app
+    networks:
+      - ragnet
+    env_file:
+      - ./.env
+    restart: always
+
+  ragcore-vectordb-server:
+    container_name: ragcore-vectordb-server
+    build:
+      context: ./ragcore-vectordb-server
+    ports:
+      - "8082:80"
+    volumes:
+      - ragcore_vectordb_server_volume:/app
+    networks:
+      - ragnet
+    env_file:
+      - ./.env
+    restart: always
+
+  ragcore-postgres:
+    image: pgvector/pgvector:pg16
+    container_name: ragcore-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - ragcore_postgres_volume:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - ragnet
+    restart: always
+
+  ragcore-doc-analyzer:
+    container_name: ragcore-doc-analyzer
+    build:
+      context: ./ragcore-doc-analyzer
+    expose:
+      - "80"
+    volumes:
+      - ragcore_doc_analyzer_volume:/app
+    networks:
+      - ragnet
+    env_file:
+      - ./.env
+    restart: always
+
+  ragcore-mongo:
+    container_name: ragcore-mongo
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongo
+      MONGO_INITDB_ROOT_PASSWORD: mongo
+    volumes:
+      - ragcore_mongo_volume:/data/db
+      - ragcore_mongo_config_volume:/data/configdb
+    networks:
+      - ragnet
+    restart: always
+    ports:
+      - "27017:27017"
+
+  ragcore-langfuse:
+    container_name: ragcore-langfuse
+    image: langfuse/langfuse:latest
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@ragcore-postgres:5432/langfuse_db
+      NEXTAUTH_URL: http://localhost:3000
+      NEXTAUTH_SECRET: mysecret
+      SALT: mysalt
+    ports:
+      - "3000:3000"
+    volumes:
+      - ragcore_langfuse_volume:/app
+    networks:
+      - ragnet
+    restart: always
+
+networks:
+  ragnet:
+    driver: bridge
+
+volumes:
+  ragcore_app_client_volume:
+  ragcore_app_server_volume:
+  ragcore_vectordb_server_volume:
+  ragcore_postgres_volume:
+  ragcore_doc_analyzer_volume:
+  ragcore_mongo_volume:
+  ragcore_mongo_config_volume:
+  ragcore_langfuse_volume:

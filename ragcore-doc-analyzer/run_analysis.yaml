@@ -1,0 +1,3 @@
+plugins:
+  local: plugins/local_driver.yaml
+  # sharepoint: plugins/sharepoint_driver.yaml

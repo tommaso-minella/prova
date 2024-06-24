@@ -1,0 +1,18 @@
+module: plugins.local_driver
+class: LocalDriver
+base_path: ./data # Path to the data directory
+permissions:
+  folders:
+    pdf1:
+      users: ["user1@example.com"]
+      groups: ["group1"]
+    pdf2:
+      users: ["user2@example.com"]
+  files:
+    "pdf1/KOPE PDF.pdf":
+      users: ["user1@example.com"]
+      groups: []
+  groups:
+    group1:
+      - "user1@example.com"
+      - "user3@example.com"

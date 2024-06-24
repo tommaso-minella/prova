@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+requests
+pydantic
+python-dotenv
+pyyaml
+PyPDF2
+unstructured[all-docs]
+numpy<2.0

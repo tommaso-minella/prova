@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# Check for required arguments
+if [ "$#" -ne 1 ]; then
+    echo "Usage: $0 [username]"
+    exit 1
+fi
+# Ensure SSH client is installed
+if ! command -v ssh > /dev/null; then
+    echo "SSH client is not installed. Installing OpenSSH client..."
+    sudo apt update && sudo apt install openssh-client -y
+fi
+# Define variables based on the input
+USERNAME=$1
+HOST_ALIAS="genaix2"
+HOST_NAME="genaix2"
+HOST_IP="20.13.123.251"
+PORT="8080"
+
+# Define paths
+SSH_DIR="$HOME/.ssh"
+KEY_NAME="id_rsa_$USERNAME"
+KEY_PATH="$SSH_DIR/$KEY_NAME"
+CONFIG_FILE="$SSH_DIR/config"
+
+# Update /etc/hosts to include the server IP and hostname
+if ! grep -q "$HOST_NAME" /etc/hosts; then
+    echo "$HOST_IP $HOST_NAME" | sudo tee -a /etc/hosts > /dev/null
+    echo "Added $HOST_NAME to /etc/hosts."
+fi
+
+# Create .ssh directory if it doesn't exist
+mkdir -p "$SSH_DIR"
+chmod 700 "$SSH_DIR"
+
+# Generate SSH key pair if it doesn't exist
+if [ ! -f "$KEY_PATH" ]; then
+    ssh-keygen -t rsa -b 4096 -f "$KEY_PATH" -N "" -C "$USERNAME key for $HOST_NAME"
+    echo "SSH key pair generated."
+else
+    echo "Key already exists: $KEY_PATH"
+fi
+
+# Set permissions for the key
+chmod 600 "$KEY_PATH"
+chmod 644 "$KEY_PATH.pub"
+
+# Configure SSH to use this key for the host
+if ! grep -q "Host $HOST_ALIAS" "$CONFIG_FILE"; then
+    cat >> "$CONFIG_FILE" <<EOF
+
+# Entry for $HOST_ALIAS
+Host $HOST_ALIAS
+    HostName $HOST_NAME
+    Port $PORT
+    User $USERNAME
+    IdentityFile $KEY_PATH
+    IdentitiesOnly yes
+EOF
+    echo "SSH configuration for $HOST_ALIAS added to $CONFIG_FILE."
+else
+    echo "SSH configuration for $HOST_ALIAS already exists."
+fi
+
+echo "Client setup complete. Please transfer the public key to the server."
+echo "----------------COPY FROM NEXT LINE---------------------------"
+cat "$KEY_PATH.pub"
